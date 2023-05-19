@@ -1,0 +1,200 @@
+/* Global styles */
+body {
+	font-family: Arial, sans-serif;
+	margin: 0;
+	padding: 0;
+	background-color: #f2f2f2;
+}
+
+/* Container styles */
+.container {
+	display: flex;
+	flex-wrap: wrap;
+	padding: 10px;
+	justify-content: center;
+	align-items: center;
+}
+
+/* Row styles */
+.row {
+	display: flex;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+/* Item styles */
+.item {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 33%;
+	min-width: 200px;
+	height: 160px;
+	background-color: white;
+	border-radius: 10px;
+	box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+	margin-right: 20px;
+}
+
+.item:last-child {
+	margin-right: 0;
+}
+
+.item h3 {
+	margin: 0;
+	font-size: 24px;
+	font-weight: bold;
+	text-align: center;
+	margin-bottom: 10px;
+}
+
+.item img {
+	width: 80px;
+	height: 80px;
+	margin-bottom: 10px;
+}
+
+.item p {
+	margin: 0;
+	font-size: 18px;
+	text-align: center;
+	color: #666;
+}
+
+/* Channel item styles */
+.item.channel {
+	height: 240px;
+}
+
+.item.channel img {
+	width: 100px;
+	height: 100px;
+	margin-bottom: 10px;
+	cursor: pointer;
+}
+
+.item.channel img.active {
+	border: 5px solid #2196F3;
+}
+
+.item.channel p {
+	margin: 0;
+	font-size: 16px;
+	text-align: center;
+	color: #666;
+	cursor: pointer;
+}
+
+.item.channel p.current {
+	font-weight: bold;
+	color: #2196F3;
+}
+
+/* Volume item styles */
+.item.volume {
+	height: 80px;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+	margin-right: 0;
+}
+
+.item.volume input[type=range] {
+	margin-left: 20px;
+	margin-right: 20px;
+	width: 50%;
+}
+
+.item.volume button {
+	padding: 10px;
+	font-size: 16px;
+	border-radius: 5px;
+	border: none;
+	background-color: #2196F3;
+	color: white;
+	cursor: pointer;
+}
+
+.item.volume button.active {
+	background-color: #0D47A1;
+}
+
+.item.volume button:hover {
+	background-color: #0D47A1;
+}
+
+#content {
+	opacity: 1;
+	transition: opacity 5.5s ease-out;
+}
+
+/* Media queries */
+@media screen and (max-width: 800px) {
+	.item {
+		width: 45%;
+		margin-right: 20px;
+	}
+	.item:last-child {
+		margin-right: 0;
+	}
+	.item.channel {
+		height: 340px;
+	}
+	.item.channel img {
+		width: 80px;
+		height: 80px;
+		margin-bottom: 10px;
+		cursor: pointer;
+	}
+	.item.channel p {
+		font-size: 14px;
+	}
+	.item.volume {
+		height: 120px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.item.volume input[type=range] {
+		margin-left: 0;
+		margin-right: 0;
+		width: 80%;
+	}
+	.item.volume button {
+		margin-top: 10px;
+	}
+}
+
+@media screen and (max-width: 600px) {
+	.item {
+		width: 100%;
+		margin-right: 0;
+	}
+	
+	.item.channel {
+		height: 420px;
+	}
+	.item.channel img {
+		width: 100px;
+		height: 100px;
+		margin-bottom: 10px;
+		cursor: pointer;
+	}
+	.item.channel p {
+		font-size: 14px;
+	}
+	.item.volume {
+		height: 120px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	.item.volume input[type=range] {
+		margin-left: 0;
+		margin-right: 0;
+		width: 80%;
+	}
+	.item.volume button {
+		margin-top: 10px;
+	}
+}

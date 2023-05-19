@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            background-color: #111111;
+            color: #ffffff;
+            margin: 0;
+            font-size: 0.75em;
+        }
+        #content-table {
+            transition: opacity 1.5s ease-out;
+        }
+        #title {
+            font-size: 0.9em;
+            padding-right: 50px;
+            color:rgb(55, 102, 142);
+        }
+        #current-time {
+            text-align: right;
+            font-size: 0.8em;
+            padding-right: 50px;
+            color:coral
+        }
+        #current-date {
+            text-align: right;
+            font-size: 0.8em;
+            color: darkseagreen
+        }
+        .radio-buttons {
+            width: 64px;
+            height: 64px;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+        }
+
+        td {
+            width: 25%;
+            text-align: center;
+        }
+        audio {
+            display: none;
+        }
+        #volume-slider {
+            text-align: center;
+            width: 80%;
+            margin-top: 20px;
+            margin-left: 10%;
+        }
+        .water-temp-icon {
+            width: 33%;
+            height: 33%;
+        }
+        .weather-icon {
+            width: 33%;
+            height: 33%;
+        }
+        .delivery-icon {
+            width: 28%;
+            height: 28%;
+        }
+        #fade {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            opacity: 0.5;
+            z-index: 1000;
+            display: none;
+        }
+        #fade.in {
+            display: block;
+        }
+        #toggle-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 2000;
+            background-color: #ff0000;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <table id="content-table">
+        <tr>
+            <td>
+                <div id="toggle-button-container">
+                    <button id="toggle-button">OFF</button>
+                </div>
+            </td>
+            <td colspan="3"><h1><span id="title">Boge Mojner 192 Infosystem</span> <span id="current-time"></span> <span id="current-date"></span></h1></td>
+        </tr>
+        <tr>
+            <td>
+                <img id="id-today-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.today_weather.image}}" alt="Weather icon">
+                <p id="id-today-weather-text">{{ data.today_weather.temperature}} &deg;C</p>
+            </td>
+            <td>
+                <img id="id-tomorrow-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.tomorrow_weather.image}}" alt="Weather icon">
+                <p id="id-tomorrow-weather-text">{{ data.tomorrow_weather.temperature}} &deg;C</p>
+            </td>
+            <td></td>
+            <td>
+                <img class="water-temp-icon" src="{{ url_for('static', filename='img/') }}{{data.water_temp.image}}" alt="Water temperature image">
+                <p id="id-water-temp">{{ data.water_temp.temperature}} &deg;C</p>
+            </td>
+        </tr>
+        <tr><td colspan="4"><hr></td></tr>
+        <tr>
+            <td>
+                <img class="delivery-icon" src="{{ url_for('static', filename='img/') }}{{data.mail_delivery.image}}" alt="Mail icon">
+            </td>
+            <td>
+                <p id="id-mail-next">Nästa utdelning: {{data.mail_delivery.next}}</p>
+                <p id="id-mail-upcoming">Nästa efter det: {{data.mail_delivery.upcoming}}</p>
+            </td>
+            <td>
+                <img class="delivery-icon" src="{{ url_for('static', filename='img/') }}{{data.trash_collection.image}}" alt="Trash icon">
+            </td>
+            <td>
+                <p id="id-next-trash">Nästa tömning: {{data.trash_collection.date}}</p>
+            </td>
+        </tr>
+        <tr><td colspan="4"><hr></td></tr>
+        <tr>
+            {% for channel in data.radio_channels %}
+            <td>
+                <audio src="{{ channel.url }}" data-audio-id="{{ loop.index0 }}"></audio>
+                <img id="current-image{{loop.index}}" class="radio-buttons" src="{{ channel.channel_img }}" alt="Radio Channels icon" data-audio-id="{{ loop.index0 }}" data-play-img="{{ channel.current_program_image }}" data-channel-img="{{ channel.channel_img }}">
+                <p id="id-current-program{{loop.index}}" class="channel-program{% if channel['name'] == data.radio_channels['active_channel'] %} current{% endif %}">{{ channel['current_program'] }}</p>
+                <p id="id-next-program{{loop.index}}" class="channel-program{% if channel['name'] == data.radio_channels['active_channel'] %} current{% endif %}">{{ channel['next_program'] }}</p>
+            </td>
+            {% endfor %}
+        </tr>
+        <tr>
+            <td colspan="4">
+                <input id="volume-slider" type="range" min="0" max="1" step="0.01" value="0.5">
+            </td>                
+        </tr>
+    </table>
+
+    <script>
+        const audioElements = document.querySelectorAll('audio');
+        const channelImages = document.querySelectorAll('.radio-buttons');
+        const volumeSlider = document.querySelector('#volume-slider');
+        const currentTime = document.querySelector('#current-time');
+        const currentDate = document.querySelector('#current-date');
+        let activeChannelIndex = null;
+        const toggleButton = document.querySelector('#toggle-button');
+        const content = document.querySelector('#content-table');
+        let isHidden = false;
+
+        function updateContent(response) {
+            // Update today's weather icon and temperature
+            const todayWeatherIcon = document.querySelector('#id-today-weather-icon');
+            const todayWeatherText = document.querySelector('#id-today-weather-text');
+            todayWeatherIcon.src = "{{ url_for('static', filename='img/') }}" + response.today_weather.image;
+            todayWeatherText.innerHTML = `${response.today_weather.temperature} &deg;C`;
+
+            // Update tomorrow's weather icon and temperature
+            const tomorrowWeatherIcon = document.querySelector('#id-tomorrow-weather-icon');
+            const tomorrowWeatherText = document.querySelector('#id-tomorrow-weather-text');
+            tomorrowWeatherIcon.src = "{{ url_for('static', filename='img/') }}" + response.tomorrow_weather.image;
+            tomorrowWeatherText.innerHTML = `${response.tomorrow_weather.temperature} &deg;C`;
+
+            // Update water temperature icon and temperature
+            const waterTempIcon = document.querySelector('.water-temp-icon');
+            const waterTempText = document.querySelector('#id-water-temp');
+            waterTempIcon.src = "{{ url_for('static', filename='img/') }}" + response.water_temp.image;
+            waterTempText.innerHTML = `${response.water_temp.temperature} &deg;C`;
+
+            // Update mail delivery info
+            const mailNext = document.querySelector('#id-mail-next');
+            const mailUpcoming = document.querySelector('#id-mail-upcoming');
+            mailNext.innerHTML = `Nästa utdelning: ${response.mail_delivery.next}`;
+            mailUpcoming.innerHTML = `Nästa efter det: ${response.mail_delivery.upcoming}`;
+
+            // Update trash collection info
+            const nextTrash = document.querySelector('#id-next-trash');
+            nextTrash.innerHTML = `Nästa tömning: ${response.trash_collection.date}`;
+
+            // Update radio channels
+            const p1Now = document.querySelector('#id-current-program0');
+            const p1Next = document.querySelector('#id-next-program0');
+            const p2Now = document.querySelector('#id-current-program1');
+            const p2Next = document.querySelector('#id-next-program1');
+            const p3Now = document.querySelector('#id-current-program2');
+            const p3Next = document.querySelector('#id-next-program2');
+            const p4Now = document.querySelector('#id-current-program3');
+            const p4Next = document.querySelector('#id-next-program3');
+
+            const p1CurrentImage = document.querySelector('#current-image0');
+            const p2CurrentImage = document.querySelector('#current-image1');
+            const p3CurrentImage = document.querySelector('#current-image2');
+            const p4CurrentImage = document.querySelector('#current-image3');
+
+            p1Now.innerHTML = response.radio_channels[0].current_program;
+            p1Next.innerHTML = response.radio_channels[0].next_program;
+            p2Now.innerHTML = response.radio_channels[1].current_program;
+            p2Next.innerHTML = response.radio_channels[1].next_program;
+            p3Now.innerHTML = response.radio_channels[2].current_program;
+            p3Next.innerHTML = response.radio_channels[2].next_program;
+            p4Now.innerHTML = response.radio_channels[3].current_program;
+            p4Next.innerHTML = response.radio_channels[3].next_program;
+
+            p1CurrentImage.src = response.radio_channels[0].current_program_image;
+            p2CurrentImage.src = response.radio_channels[1].current_program_image;
+            p3CurrentImage.src = response.radio_channels[2].current_program_image;
+            p4CurrentImage.src = response.radio_channels[3].current_program_image;
+        }
+
+
+        toggleButton.addEventListener('click', () => {
+            toggleButton.innerHTML = isHidden ? 'OFF' : 'ON';
+            isHidden = !isHidden;
+            content.style.opacity = isHidden ? 0.1 : 1;
+            if(isHidden) {
+                toggleButton.style.backgroundColor = '#00ff00';
+                toggleButton.style.color = '#fff';
+            } else {
+                toggleButton.style.opacity = 1;
+                toggleButton.style.backgroundColor = '#ff0000';
+                toggleButton.style.color = '#fff';
+            }
+        });
+
+      
+        // Call the checkTime function every second
+        setInterval(checkTime, 1000);
+      
+        // Make an ajax call to the server every minute to update all the data
+        setInterval(update, 60000);
+
+        function update() {
+            fetch('/update', {
+                method: 'GET',
+                headers: {
+                'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+                .then((response) => {
+                updateContent(response);
+                });
+        }
+
+
+        function checkTime() {
+          const date = new Date();
+          const hours = date.getHours();
+          const minutes = date.getMinutes();
+          const seconds = date.getSeconds();
+          const day = date.getDate();
+          const month = date.getMonth() + 1;
+          const year = date.getFullYear();
+          // Pad hours, minutes, seconds, day and month with zeros if needed
+          const hoursStr = hours < 10 ? `0${hours}` : `${hours}`;
+          const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+          const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
+          const dayStr = day < 10 ? `0${day}` : `${day}`;
+          const monthStr = month < 10 ? `0${month}` : `${month}`;
+          // Update the time and date
+          currentTime.innerHTML = `${hoursStr}:${minutesStr}:${secondsStr}`;
+          currentDate.innerHTML = `${dayStr}/${monthStr}/${year}`;
+
+          // If the time is after 22:00 and before 07:00, dim the screen
+            if(hours >= 22 || hours < 7) {
+                content.style.opacity = 0.1;
+                toggleButton.style.opacity = 0.1;
+            } else {
+                if(!isHidden) {
+                    content.style.opacity = 1;
+                    toggleButton.style.opacity = 1;
+                }
+            }
+        }
+      
+        function playChannel(channelIndex) {
+          if (activeChannelIndex !== null && activeChannelIndex !== channelIndex) {
+            audioElements[activeChannelIndex].pause();
+          }
+      
+          const audioElement = audioElements[channelIndex];
+          audioElement.volume = volumeSlider.value;
+          audioElement.paused ? audioElement.play() : audioElement.pause();
+      
+          activeChannelIndex = channelIndex;
+        }
+      
+        channelImages.forEach((channelImage, index) => {
+          channelImage.addEventListener('click', () => {
+            playChannel(index);
+          });
+      
+          audioElements[index].addEventListener('play', () => {
+            channelImage.src = channelImage.dataset.playImg;
+          });
+      
+          audioElements[index].addEventListener('pause', () => {
+            channelImage.src = channelImage.dataset.channelImg;
+          });
+        });
+      
+        volumeSlider.addEventListener('input', () => {
+          audioElements.forEach(audioElement => {
+            audioElement.volume = volumeSlider.value;
+          });
+        });
+      </script>
+    </body>
+</html>

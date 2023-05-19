@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Raspberry Pi Dashboard</title>
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="item">
+				<h3>Today's Weather</h3>
+				<img src="{{ url_for('static', filename='img/' + data.today_weather['image']) }}" alt="Today's Weather icon">
+				<p>{{ data.today_weather['text'] }}</p>
+				<p>{{ data.today_weather['temp'] }}&deg;C</p>
+				<p>{{ data.today_weather['wind_dir'] }} {{ data.today_weather['wind_speed'] }} km/h</p>
+			</div>
+			<div class="item">
+				<h3>Tomorrow's Weather</h3>
+				<img src="{{ url_for('static', filename='img/' + data.tomorrow_weather['image']) }}" alt="Tomorrow's Weather icon">
+				<p>{{ data.tomorrow_weather['text'] }}</p>
+				<p>{{ data.tomorrow_weather['temp'] }}&deg;C</p>
+				<p>{{ data.tomorrow_weather['wind_dir'] }} {{ data.tomorrow_weather['wind_speed'] }} km/h</p>
+			</div>
+			<div class="item">
+				<h3>Water Temperature</h3>
+				<img src="{{ url_for('static', filename='img/' + data.water_temp['image']) }}" alt="Water Temperature icon">
+				<p>{{ data.water_temp['text'] }}&deg;C</p>
+				<p>{{ data.air_temp['text'] }}&deg;C</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="item">
+				<h3>Next Mail Delivery</h3>
+				<img src="{{ url_for('static', filename='img/' + data.mail_delivery['image']) }}" alt="Mail Delivery icon">
+				<p>{{ data.mail_delivery['text'] }}</p>
+			</div>
+			<div class="item">
+				<h3>Next Trash Collection</h3>
+				<img src="{{ url_for('static', filename='img/' + data.trash_collection['image']) }}" alt="Trash Collection icon">
+				<p>{{ data.trash_collection['text'] }}</p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="item channel">
+				<h3>Radio Channels</h3>
+				{% for channel in data.radio_channels['channels'] %}
+				<img src="{{ channel.channel_img }}" alt="Radio Channels icon">
+				<p class="channel-program{% if channel['name'] == data.radio_channels['active_channel'] %} current{% endif %}">{{ channel['current_program'] }}</p>
+				<p class="channel-program{% if channel['name'] == data.radio_channels['active_channel'] %} current{% endif %}">{{ channel['next_program'] }}</p>
+				{% endfor %}
+			</div>
+			<div class="item volume">
+				<h3>Volume</h3>
+				<input type="range" min="0" max="100" value="{{ data.volume }}" step="1">
+				<button {% if data.on %}class="active"{% endif %}>{{ 'ON' if data.on else 'OFF' }}</button>
+			</div>
+		</div>
+	</div>
+	<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
