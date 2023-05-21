@@ -139,12 +139,12 @@
         </tr>
         <tr>
             <td>
-                <p id="id-today-weather-text">Nu</p>
+                <p>Nu</p>
                 <img id="id-today-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.today_weather.image}}" alt="Weather icon">
                 <p id="id-today-weather-text">{{ data.today_weather.temperature}} &deg;C</p>
             </td>
             <td>
-                <p id="id-today-weather-text">Om 24 timmar</p>
+                <p>Om 24 timmar</p>
                 <img id="id-tomorrow-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.tomorrow_weather.image}}" alt="Weather icon">
                 <p id="id-tomorrow-weather-text">{{ data.tomorrow_weather.temperature}} &deg;C</p>
             </td>
@@ -152,7 +152,7 @@
             <td>
                 <img class="water-temp-icon" src="{{ url_for('static', filename='img/') }}{{data.water_temp.image}}" alt="Water temperature image">
                 <p id="id-water-temp">Vatten: {{ data.water_temp.temperature}} &deg;C</p>
-                <p id="id-water-temp">Luft: {{ data.water_temp.air_temp}} &deg;C</p>
+                <p id="id-air-temp">Luft: {{ data.water_temp.air_temp}} &deg;C</p>
                 
             </td>
         </tr>
@@ -226,8 +226,10 @@
             // Update water temperature icon and temperature
             const waterTempIcon = document.querySelector('.water-temp-icon');
             const waterTempText = document.querySelector('#id-water-temp');
+            const waterAirText = document.querySelector('#id-air-temp');
             waterTempIcon.src = "{{ url_for('static', filename='img/') }}" + response.water_temp.image;
-            waterTempText.innerHTML = `${response.water_temp.temperature} &deg;C`;
+            waterTempText.innerHTML = `Vatten: ${response.water_temp.temperature} &deg;C`;
+            waterAirText.innerHTML = `Luft: ${response.water_temp.temperature} &deg;C`;
 
             // Update mail delivery info
             const mailNext = document.querySelector('#id-mail-next');
