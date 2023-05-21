@@ -91,6 +91,15 @@
             padding: 5px 10px;
             cursor: pointer;
         }
+        #update-button {
+            width: 30px;
+            height: 30px;
+            background-color: black;
+            border: none;
+            margin-left: 10px;  
+            opacity: 0;
+        }
+
     </style>
 </head>
 <body>
@@ -100,6 +109,7 @@
             <td>
                 <div id="toggle-button-container">
                     <button id="toggle-button">OFF</button>
+                    <button id="update-button" title="Update"></button>
                 </div>
             </td>
             <td colspan="3"><h1><span id="title">Boge Mojner 192 Infosystem</span> <span id="current-time"></span> <span id="current-date"></span></h1></td>
@@ -154,6 +164,9 @@
     </table>
 
     <script>
+        document.querySelector('#update-button').addEventListener('click', update);
+
+
         const audioElements = document.querySelectorAll('audio');
         const channelImages = document.querySelectorAll('.radio-buttons');
         const volumeSlider = document.querySelector('#volume-slider');
