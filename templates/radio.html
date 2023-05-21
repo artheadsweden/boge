@@ -208,6 +208,7 @@
             const p3CurrentImage = document.querySelector('#current-image2');
             const p4CurrentImage = document.querySelector('#current-image3');
 
+           
             p1Now.innerHTML = response.radio_channels[0].current_program;
             p1Next.innerHTML = response.radio_channels[0].next_program;
             p2Now.innerHTML = response.radio_channels[1].current_program;
@@ -273,6 +274,9 @@
           const dayStr = day < 10 ? `0${day}` : `${day}`;
           const monthStr = month < 10 ? `0${month}` : `${month}`;
           // Update the time and date
+          const currentTime = document.querySelector('#current-time');
+          const currentDate = document.querySelector('#current-date');
+
           currentTime.innerHTML = `${hoursStr}:${minutesStr}:${secondsStr}`;
           currentDate.innerHTML = `${dayStr}/${monthStr}/${year}`;
 

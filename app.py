@@ -75,7 +75,7 @@ def get_trash(start_date, interval):
     return next_collection.date()
 
 def get_water_temp():
-    response = requests.post("https://gotlandsenergi.se/badapp//Home/buoyGraf", headers={'User-Agent': 'Mozilla/5.0'}, verify=False)
+    response = requests.post("https://gotlandsenergi.se/badapp//Home/buoyGraf", headers={'User-Agent': 'Mozilla/5.0'})
     #open('test.html', 'w').write(response.text)
     water = 'N/A'
     air = 'N/A'
@@ -102,7 +102,7 @@ def get_weather(lat, lng):
     return current_weather, tomorrow_weather
 
 def fetch_data():
-    return get_sr(), get_mail('62436'), get_trash(datetime.datetime(2023, 5, 4), 2), get_weather(57.67882, 18.76912), get_water_temp()
+    return get_sr(), get_mail('62436'), get_trash(datetime.datetime(2023, 5, 25), 2), get_weather(57.67882, 18.76912), get_water_temp()
 
 def update():
     locale.setlocale(locale.LC_TIME, "sv_SE.utf8")
