@@ -2,6 +2,8 @@ from flask import Flask, render_template
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 import requests
+import feedparser
+from time import strftime
 import datetime
 from dateutil import rrule
 import locale
@@ -101,12 +103,35 @@ def get_weather(lat, lng):
     }
     return current_weather, tomorrow_weather
 
+def get_latest_feeds(num_entries=3):
+    feed_url = "https://helagotland.se/rss/lokalt"
+    response = requests.get(feed_url)
+    response.encoding = 'utf-8'  # force utf-8 encoding
+    feed_content = response.text
+
+    feed = feedparser.parse(feed_content)
+    
+    # Swedish month names
+    months_swedish = {
+        1: 'januari', 2: 'februari', 3: 'mars', 4: 'april', 5: 'maj',
+        6: 'juni', 7: 'juli', 8: 'augusti', 9: 'september',
+        10: 'oktober', 11: 'november', 12: 'december'
+    }
+
+    entries = []
+    for entry in feed.entries:
+        pub_time = entry.published_parsed
+        pub_str = strftime('%H:%M:%S, %d ', pub_time) + months_swedish[pub_time.tm_mon] + strftime(', %Y', pub_time)
+        entries.append({'title': entry.title, 'time': pub_str})
+
+    return entries[:num_entries]
+
 def fetch_data():
-    return get_sr(), get_mail('62436'), get_trash(datetime.datetime(2023, 5, 25), 2), get_weather(57.67882, 18.76912), get_water_temp()
+    return get_sr(), get_mail('62436'), get_trash(datetime.datetime(2023, 5, 25), 2), get_weather(57.67882, 18.76912), get_water_temp(), get_latest_feeds(5)
 
 def update():
     locale.setlocale(locale.LC_TIME, "sv_SE.utf8")
-    radio, mail, trash, weather, temp = fetch_data()
+    radio, mail, trash, weather, temp, news = fetch_data()
     data = {
     'today_weather': {
         'temperature': weather[0]['temperature'],
@@ -132,7 +157,8 @@ def update():
     },
     'radio_channels': radio,
     'volume': 50,
-    'power': 'ON'
+    'power': 'ON',
+    'news': news,
     }
     return data
 

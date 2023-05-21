@@ -34,8 +34,8 @@
             color: darkseagreen
         }
         .radio-buttons {
-            width: 64px;
-            height: 64px;
+            width: 45px;
+            height: 45px;
             cursor: pointer;
         }
         table {
@@ -52,20 +52,20 @@
         #volume-slider {
             text-align: center;
             width: 80%;
-            margin-top: 20px;
+            margin-top: 5px;
             margin-left: 10%;
         }
         .water-temp-icon {
-            width: 33%;
-            height: 33%;
+            width: 25%;
+            height: 25%;
         }
         .weather-icon {
-            width: 33%;
-            height: 33%;
+            width: 25%;
+            height: 25%;
         }
         .delivery-icon {
-            width: 28%;
-            height: 28%;
+            width: 18%;
+            height: 18%;
         }
         #fade {
             position: fixed;
@@ -97,7 +97,30 @@
             background-color: black;
             border: none;
             margin-left: 10px;  
-            opacity: 0;
+            opacity: 0.001;
+            cursor: pointer;
+        }
+        .news-ticker {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #cee895;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .news-ticker span {
+            display: inline-block;
+            padding-left: 100%;
+            animation: scroll-left 30s linear infinite;
+        }
+
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
         }
 
     </style>
@@ -116,17 +139,28 @@
         </tr>
         <tr>
             <td>
+                <p id="id-today-weather-text">Nu</p>
                 <img id="id-today-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.today_weather.image}}" alt="Weather icon">
                 <p id="id-today-weather-text">{{ data.today_weather.temperature}} &deg;C</p>
             </td>
             <td>
+                <p id="id-today-weather-text">Om 24 timmar</p>
                 <img id="id-tomorrow-weather-icon" class="weather-icon" src="{{ url_for('static', filename='img/') }}{{data.tomorrow_weather.image}}" alt="Weather icon">
                 <p id="id-tomorrow-weather-text">{{ data.tomorrow_weather.temperature}} &deg;C</p>
             </td>
             <td></td>
             <td>
                 <img class="water-temp-icon" src="{{ url_for('static', filename='img/') }}{{data.water_temp.image}}" alt="Water temperature image">
-                <p id="id-water-temp">{{ data.water_temp.temperature}} &deg;C</p>
+                <p id="id-water-temp">Vatten: {{ data.water_temp.temperature}} &deg;C</p>
+                <p id="id-water-temp">Luft: {{ data.water_temp.air_temp}} &deg;C</p>
+                
+            </td>
+        </tr>
+        <tr>
+            <td colspan="4">
+            <div class="news-ticker">
+                <span id="news">Hämtar lokala nyheter...</span>
+            </div>
             </td>
         </tr>
         <tr><td colspan="4"><hr></td></tr>
@@ -165,7 +199,6 @@
 
     <script>
         document.querySelector('#update-button').addEventListener('click', update);
-
 
         const audioElements = document.querySelectorAll('audio');
         const channelImages = document.querySelectorAll('.radio-buttons');
@@ -207,21 +240,19 @@
             nextTrash.innerHTML = `Nästa tömning: ${response.trash_collection.date}`;
 
             // Update radio channels
-            const p1Now = document.querySelector('#id-current-program0');
-            const p1Next = document.querySelector('#id-next-program0');
-            const p2Now = document.querySelector('#id-current-program1');
-            const p2Next = document.querySelector('#id-next-program1');
-            const p3Now = document.querySelector('#id-current-program2');
-            const p3Next = document.querySelector('#id-next-program2');
-            const p4Now = document.querySelector('#id-current-program3');
-            const p4Next = document.querySelector('#id-next-program3');
+            const p1Now = document.getElementById('id-current-program1');
+            const p1Next = document.querySelector('#id-next-program1');
+            const p2Now = document.querySelector('#id-current-program2');
+            const p2Next = document.querySelector('#id-next-program2');
+            const p3Now = document.querySelector('#id-current-program3');
+            const p3Next = document.querySelector('#id-next-program3');
+            const p4Now = document.querySelector('#id-current-program4');
+            const p4Next = document.querySelector('#id-next-program4');
 
-            const p1CurrentImage = document.querySelector('#current-image0');
-            const p2CurrentImage = document.querySelector('#current-image1');
-            const p3CurrentImage = document.querySelector('#current-image2');
-            const p4CurrentImage = document.querySelector('#current-image3');
-
-           
+            const p1CurrentImage = document.querySelector('#current-image1');
+            const p2CurrentImage = document.querySelector('#current-image2');
+            const p3CurrentImage = document.querySelector('#current-image3');
+            const p4CurrentImage = document.querySelector('#current-image4');
             p1Now.innerHTML = response.radio_channels[0].current_program;
             p1Next.innerHTML = response.radio_channels[0].next_program;
             p2Now.innerHTML = response.radio_channels[1].current_program;
@@ -230,11 +261,31 @@
             p3Next.innerHTML = response.radio_channels[2].next_program;
             p4Now.innerHTML = response.radio_channels[3].current_program;
             p4Next.innerHTML = response.radio_channels[3].next_program;
+            if (activeChannelIndex === 0) {
+                p1CurrentImage.src = response.radio_channels[0].current_program_image;
+            }
+            else {
+                p1CurrentImage.src = response.radio_channels[0].channel_img;
+            }
+            if (activeChannelIndex === 1) {
+                p2CurrentImage.src = response.radio_channels[1].current_program_image;
+            }
+            else {
+                p2CurrentImage.src = response.radio_channels[1].channel_img;
+            }
+            if (activeChannelIndex === 2) {
+                p3CurrentImage.src = response.radio_channels[2].current_program_image;
+            }
+            else {
+                p3CurrentImage.src = response.radio_channels[2].channel_img;
+            }
+            if (activeChannelIndex === 3) {
+                p4CurrentImage.src = response.radio_channels[3].current_program_image;
+            }
+            else {
+                p4CurrentImage.src = response.radio_channels[3].channel_img;
+            }
 
-            p1CurrentImage.src = response.radio_channels[0].current_program_image;
-            p2CurrentImage.src = response.radio_channels[1].current_program_image;
-            p3CurrentImage.src = response.radio_channels[2].current_program_image;
-            p4CurrentImage.src = response.radio_channels[3].current_program_image;
         }
 
 
@@ -268,7 +319,9 @@
             }).then(response => response.json())
                 .then((response) => {
                 updateContent(response);
-                });
+                updateNews(response.news);
+                })
+                .catch(error => console.error('Error:', error));
         }
 
 
@@ -305,6 +358,18 @@
             // }
         }
       
+        function updateNews(newsArray) {
+            const newsTicker = document.querySelector('#news');
+            let newsText = '';
+            newsArray.forEach((news, index) => {
+                newsText += news.title + ' (' + news.time + ')';
+                if (index !== newsArray.length - 1) {
+                    newsText += ' --- ';
+                }
+            });
+            newsTicker.textContent = newsText;
+        }
+
         function playChannel(channelIndex) {
           if (activeChannelIndex !== null && activeChannelIndex !== channelIndex) {
             audioElements[activeChannelIndex].pause();
