@@ -229,7 +229,7 @@
             const waterAirText = document.querySelector('#id-air-temp');
             waterTempIcon.src = "{{ url_for('static', filename='img/') }}" + response.water_temp.image;
             waterTempText.innerHTML = `Vatten: ${response.water_temp.temperature} &deg;C`;
-            waterAirText.innerHTML = `Luft: ${response.water_temp.temperature} &deg;C`;
+            waterAirText.innerHTML = `Luft: ${response.water_temp.air_temp} &deg;C`;
 
             // Update mail delivery info
             const mailNext = document.querySelector('#id-mail-next');
