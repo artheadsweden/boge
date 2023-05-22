@@ -209,6 +209,7 @@
         const toggleButton = document.querySelector('#toggle-button');
         const content = document.querySelector('#content-table');
         let isHidden = false;
+        channelStreams = ['http://sverigesradio.se/topsy/direkt/srapi/132.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/163.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/164.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/205.mp3'];
 
         function updateContent(response) {
             // Update today's weather icon and temperature
@@ -379,8 +380,19 @@
       
           const audioElement = audioElements[channelIndex];
           audioElement.volume = volumeSlider.value;
-          audioElement.paused ? audioElement.play() : audioElement.pause();
-      
+          //audioElement.paused ? audioElement.play() : audioElement.pause();
+          if (audioElement.paused) {
+            console.log('play');
+            audioElement.src = channelStreams[channelIndex];
+            audioElement.play();
+          }
+          else {
+            console.log('pause');
+            audioElement.src = '';
+            audioElement.pause();
+          }
+          console.log(audioElement.src);
+          console.log(audioElement.paused);
           activeChannelIndex = channelIndex;
         }
       
