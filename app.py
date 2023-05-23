@@ -1,6 +1,4 @@
 from flask import Flask, render_template
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 import requests
 import feedparser
 from time import strftime
@@ -9,13 +7,16 @@ from dateutil import rrule
 import locale
 import json
 
+
+app = Flask(__name__)
+
+
 class CustomJSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, datetime.datetime):
             return obj.strftime('%Y-%m-%d %H:%M:%S')
         return json.JSONEncoder.default(self, obj)
 
-app = Flask(__name__)
 
 
 def get_current_and_next_program(channel_id):
@@ -35,6 +36,7 @@ def get_current_and_next_program(channel_id):
     }
  
     return current_program, next_program
+
 
 def get_sr():
     channels_url = 'http://api.sr.se/api/v2/channels?format=json'
@@ -61,10 +63,12 @@ def get_sr():
         channel_list.append(c)
     return channel_list
 
+
 def get_mail(zip):
     url = f'https://portal.postnord.com/api/sendoutarrival/closest?postalCode={zip}'
     mail = requests.get(url).json()
     return mail
+
 
 def get_trash(start_date, interval):
     # Get the date of the next trash collection from today
@@ -76,9 +80,9 @@ def get_trash(start_date, interval):
 
     return next_collection.date()
 
+
 def get_water_temp():
     response = requests.post("https://gotlandsenergi.se/badapp//Home/buoyGraf", headers={'User-Agent': 'Mozilla/5.0'})
-    #open('test.html', 'w').write(response.text)
     water = 'N/A'
     air = 'N/A'
     for i, line in enumerate(response.text.splitlines()):
@@ -87,6 +91,7 @@ def get_water_temp():
             air = response.text.splitlines()[i+2].strip()[4:-6]
             break
     return water, air
+
 
 def get_weather(lat, lng):
     url = f'https://opendata-download-metfcst.smhi.se/api/category/pmp3g/version/2/geotype/point/lon/' + str(lng) + '/lat/' + str(lat) + '/data.json'
@@ -102,6 +107,7 @@ def get_weather(lat, lng):
         'icon': weather['timeSeries'][24]['parameters'][18]['values'][0]
     }
     return current_weather, tomorrow_weather
+
 
 def get_latest_feeds(num_entries=3):
     feed_url = "https://helagotland.se/rss/lokalt"
@@ -126,8 +132,17 @@ def get_latest_feeds(num_entries=3):
 
     return entries[:num_entries]
 
+
 def fetch_data():
-    return get_sr(), get_mail('62436'), get_trash(datetime.datetime(2023, 5, 25), 2), get_weather(57.67882, 18.76912), get_water_temp(), get_latest_feeds(5)
+    return (
+        get_sr(), 
+        get_mail('62436'), 
+        get_trash(datetime.datetime(2023, 5, 25), 2), 
+        get_weather(57.67882, 18.76912), 
+        get_water_temp(), 
+        get_latest_feeds(5)
+    )
+
 
 def update():
     locale.setlocale(locale.LC_TIME, "sv_SE.utf8")
