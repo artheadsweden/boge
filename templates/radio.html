@@ -81,7 +81,7 @@
         #fade.in {
             display: block;
         }
-        #toggle-button {
+        #off-button {
             position: absolute;
             top: 20px;
             left: 20px;
@@ -134,6 +134,55 @@
             100% { transform: translateX(-100%); }
         }
 
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,1.0);
+        }
+
+        .clock {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #333;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            background: #333;
+        }
+
+        .hour-hand {
+            width: 0.5%;
+            height: 30%;
+            transform-origin: 50% 100%;
+        }
+
+        .minute-hand {
+            width: 0.2%;
+            height: 40%;
+            transform-origin: 50% 100%;
+        }
+
+        .second-hand {
+            width: 0.1%;
+            height: 45%;
+            transform-origin: 50% 100%;
+        }
+
+
     </style>
 </head>
 <body>
@@ -142,7 +191,7 @@
         <tr>
             <td>
                 <div id="toggle-button-container">
-                    <button id="toggle-button">OFF</button>
+                    <button id="off-button">OFF</button>
                     <button id="update-button" title="Update"></button>
                 </div>
             </td>
@@ -215,7 +264,12 @@
             </td>                
         </tr>
     </table>
-
+    <div id="modal" class="modal">
+        <div class="clock">
+          <div class="hand hour-hand"></div>
+          <div class="hand minute-hand"></div>
+          <div class="hand second-hand"></div>
+        </div>
     <script>
         document.querySelector('#update-button').addEventListener('click', update);
 
@@ -230,6 +284,25 @@
         let isHidden = false;
         channelStreams = ['http://sverigesradio.se/topsy/direkt/srapi/132.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/163.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/164.mp3', 'http://sverigesradio.se/topsy/direkt/srapi/205.mp3'];
         channelImgs = ['https://static-cdn.sr.se/images/132/2186745_512_512.jpg?preset=api-default-square', 'https://static-cdn.sr.se/images/163/2186754_512_512.jpg?preset=api-default-square', 'https://static-cdn.sr.se/images/164/2186756_512_512.jpg?preset=api-default-square', 'https://static-cdn.sr.se/images/94/99c16fdf-e9b7-4232-ba4b-223f0f8e4e79.jpg?preset=api-default-square']
+
+        function isToday(dateString) {
+            const today = new Date();
+            const months = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december'];
+            
+            // Extract day, month, and year from dateString
+            const [day, monthName, year] = dateString.split(' ');
+
+            // Convert month name to number (0-11)
+            const month = months.indexOf(monthName);
+
+            // Create a new date object
+            const date = new Date(year, month, day);
+            
+            return date.getDate() === today.getDate() &&
+                date.getMonth() === today.getMonth() &&
+                date.getFullYear() === today.getFullYear();
+        }
+
 
         function updateContent(response) {
             // Update today's weather icon and temperature
@@ -252,15 +325,33 @@
             waterTempText.innerHTML = `Vatten: ${response.water_temp.temperature} &deg;C`;
             waterAirText.innerHTML = `Luft: ${response.water_temp.air_temp} &deg;C`;
 
-            // Update mail delivery info
+            // Update mail info
             const mailNext = document.querySelector('#id-mail-next');
             const mailUpcoming = document.querySelector('#id-mail-upcoming');
             mailNext.innerHTML = `Nästa utdelning: ${response.mail_delivery.next}`;
             mailUpcoming.innerHTML = `Nästa efter det: ${response.mail_delivery.upcoming}`;
 
+            if (isToday(response.mail_delivery.next)) {
+                mailNext.style.color = 'green';
+            } else {
+                mailNext.style.color = '';  // Reset to default color if not today
+            }
+
+            if (isToday(response.mail_delivery.upcoming)) {
+                mailUpcoming.style.color = 'green';
+            } else {
+                mailUpcoming.style.color = '';  // Reset to default color if not today
+            }
+
             // Update trash collection info
             const nextTrash = document.querySelector('#id-next-trash');
             nextTrash.innerHTML = `Nästa tömning: ${response.trash_collection.date}`;
+
+            if (isToday(response.trash_collection.date)) {
+                nextTrash.style.color = 'green';
+            } else {
+                nextTrash.style.color = '';  // Reset to default color if not today
+            }
 
             // Update radio channels
             const p1Now = document.querySelector('#id-current-program1');
@@ -312,27 +403,62 @@
         }
 
 
-        toggleButton.addEventListener('click', () => {
-            toggleButton.innerHTML = isHidden ? 'OFF' : 'ON';
-            isHidden = !isHidden;
-            content.style.opacity = isHidden ? 0.05 : 1;
-            if(isHidden) {
-                toggleButton.style.backgroundColor = '#00ff00';
-                toggleButton.style.color = '#fff';
-            } else {
-                toggleButton.style.opacity = 1;
-                toggleButton.style.backgroundColor = '#ff0000';
-                toggleButton.style.color = '#fff';
+        // toggleButton.addEventListener('click', () => {
+        //     toggleButton.innerHTML = isHidden ? 'OFF' : 'ON';
+        //     isHidden = !isHidden;
+        //     content.style.opacity = isHidden ? 0.05 : 1;
+        //     if(isHidden) {
+        //         toggleButton.style.backgroundColor = '#00ff00';
+        //         toggleButton.style.color = '#fff';
+        //     } else {
+        //         toggleButton.style.opacity = 1;
+        //         toggleButton.style.backgroundColor = '#ff0000';
+        //         toggleButton.style.color = '#fff';
+        //     }
+        // });
+        function updateClock() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                let seconds = now.getSeconds();
+
+                const hourHand = document.querySelector('.hour-hand');
+                const minuteHand = document.querySelector('.minute-hand');
+                const secondHand = document.querySelector('.second-hand');
+
+                // 12 hour format for hour hand
+                hours = hours > 12 ? hours - 12 : hours;
+
+                const hourDegree = ((hours + minutes / 60) / 12) * 360;
+                const minuteDegree = ((minutes + seconds / 60) / 60) * 360;
+                const secondDegree = (seconds / 60) * 360;
+
+                hourHand.style.transform = `rotate(${hourDegree}deg)`;
+                minuteHand.style.transform = `rotate(${minuteDegree}deg)`;
+                secondHand.style.transform = `rotate(${secondDegree}deg)`;
+
+                setTimeout(updateClock, 1000);
             }
-        });
+
+            updateClock();
+
+            document.getElementById('off-button').addEventListener('click', function() {
+                document.getElementById('modal').style.display = 'block';
+                document.getElementById('off-button').hidden = true;
+            });
+            
+            document.getElementById('modal').addEventListener('click', function() {
+                this.style.display = 'none';
+                document.getElementById('off-button').hidden = false;
+            });
+       
 
       
         // Call the checkTime function every second
         setInterval(checkTime, 1000);
       
-        // Make an ajax call to the server every minute to update all the data
-        //setInterval(update, 60000);
-        setInterval(update, 10000);
+        // Call the update function every 30 minutes
+        setInterval(update, 1800000);
 
         function update() {
             fetch('/update', {
