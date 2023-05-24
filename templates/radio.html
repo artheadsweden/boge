@@ -457,8 +457,8 @@
         // Call the checkTime function every second
         setInterval(checkTime, 1000);
       
-        // Call the update function every 30 minutes
-        setInterval(update, 1800000);
+        // Call the update function every minute
+        setInterval(update, 60000);
 
         function update() {
             fetch('/update', {
