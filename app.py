@@ -86,7 +86,7 @@ def get_water_temp():
     water = 'N/A'
     air = 'N/A'
     for i, line in enumerate(response.text.splitlines()):
-        if "<td>Åminne</td>" in line.strip():
+        if "<td>Herta</td>" in line.strip():
             water = response.text.splitlines()[i+1].strip()[4:-6]
             air = response.text.splitlines()[i+2].strip()[4:-6]
             break
@@ -128,7 +128,8 @@ def get_latest_feeds(num_entries=3):
     for entry in feed.entries:
         pub_time = entry.published_parsed
         pub_str = strftime('%H:%M:%S, %d ', pub_time) + months_swedish[pub_time.tm_mon] + strftime(', %Y', pub_time)
-        entries.append({'title': entry.title, 'time': pub_str})
+        if not 'fastighetsaffarer' in entry.link:
+            entries.append({'title': entry.title, 'time': pub_str})
 
     return entries[:num_entries]
 
@@ -145,7 +146,7 @@ def fetch_data():
 
 
 def update():
-    locale.setlocale(locale.LC_TIME, "sv_SE.utf8")
+    #locale.setlocale(locale.LC_TIME, "sv_SE.utf8")
     radio, mail, trash, weather, temp, news = fetch_data()
     data = {
     'today_weather': {
